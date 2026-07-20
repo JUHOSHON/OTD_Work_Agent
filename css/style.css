@@ -1,0 +1,246 @@
+/* 
+  Theme: Chatbot Interface - Dark Cyborg (Glow Effects)
+  Description: 입력창 글로우, 전송 버튼 펄싱 애니메이션, 밝은 입력창 강조
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap');
+
+:root {
+  --bg-color: #000000;
+  --card-bg: #0a0a0a;
+  --primary-accent: #00f3ff; /* Cyan */
+  --secondary-accent: #bc13fe; /* Purple */
+  --text-main: #ffffff;
+  --text-muted: #888888;
+  --border-color: #333333;
+  --user-msg-bg: #1a1a1a;
+  --ai-msg-bg: #0d0d15;
+  --font-display: 'Orbitron', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header Area */
+header {
+  padding: 1.5rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(10, 10, 10, 0.9);
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  color: var(--text-main);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* Main Container */
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 1200px;
+  width: 95%;
+  margin: 0 auto;
+  padding: 1rem;
+  height: calc(100vh - 80px); /* 헤더 높이 제외 */
+}
+
+/* Chat Box Area */
+.chat-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+/* Chat Messages Area */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* 메시지 간격 */
+  background: #050505;
+}
+
+/* Message Bubbles */
+.message {
+  max-width: 70%;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  position: relative;
+  word-wrap: break-word;
+  white-space: pre-wrap; /* 줄바꿈 유지 */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* AI Message (Left) */
+.message.ai {
+  align-self: flex-start;
+  background-color: var(--ai-msg-bg);
+  border: 1px solid #222;
+  border-left: 3px solid var(--secondary-accent);
+  border-top-left-radius: 2px;
+  color: #e0e0e0;
+}
+
+/* User Message (Right) */
+.message.user {
+  align-self: flex-end;
+  background-color: var(--user-msg-bg);
+  border: 1px solid #333;
+  border-right: 3px solid var(--primary-accent);
+  border-top-right-radius: 2px;
+  color: var(--text-main);
+}
+
+/* Input Area */
+.input-area {
+  padding: 1rem;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+textarea {
+  flex: 1;
+  padding: 12px;
+  background: #000;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  /* 텍스트 색상 밝게 변경 */
+  color: #ffffff; 
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  resize: none;
+  height: 50px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+/* 플레이스홀더(Placeholder) 색상 밝게 변경 */
+textarea::placeholder {
+  color: #a0a0a0;
+  opacity: 1; /* Firefox용 */
+}
+
+/* 입력창 Glow 효과 */
+textarea:focus {
+  border-color: var(--primary-accent);
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.3), inset 0 0 5px rgba(0, 243, 255, 0.1);
+  background: rgba(0, 10, 20, 0.8);
+}
+
+/* 버튼 스타일 */
+button {
+  padding: 0 20px;
+  height: 50px;
+  background: transparent;
+  border: 1px solid var(--primary-accent);
+  color: var(--primary-accent);
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  text-shadow: 0 0 5px rgba(0, 243, 255, 0.5);
+  
+  /* 펄싱 애니메이션 적용 */
+  animation: pulse-glow 2s infinite alternate;
+}
+
+button:hover {
+  background: var(--primary-accent);
+  color: #000;
+  /* 호버 시 애니메이션 중지 및 고정 밝기 */
+  animation: none;
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), 0 0 40px rgba(0, 243, 255, 0.4);
+  text-shadow: none;
+  border-color: var(--primary-accent);
+}
+
+button:active {
+  transform: scale(0.98);
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+}
+
+/* 펄싱 글로우 애니메이션 정의 */
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 5px rgba(0, 243, 255, 0.2), inset 0 0 2px rgba(0, 243, 255, 0.1);
+    border-color: rgba(0, 243, 255, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.6), inset 0 0 5px rgba(0, 243, 255, 0.3);
+    border-color: var(--primary-accent);
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Loading Animation */
+.loading {
+  display: flex;
+  gap: 5px;
+  padding: 5px 0;
+}
+
+.loading span {
+  width: 6px;
+  height: 6px;
+  background-color: var(--primary-accent);
+  animation: blink 1.4s infinite both;
+}
+
+.loading span:nth-child(1) { animation-delay: -0.32s; }
+.loading span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0; }
+  40% { opacity: 1; }
+}
