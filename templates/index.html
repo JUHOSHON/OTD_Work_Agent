@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTD Work Agent</title>
+    <!-- Google Fonts: Orbitron (Display) & Share Tech Mono (Mono) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <header>
+        <!-- 로봇 이모티콘 추가 -->
+        <h1>🤖 OTD Work Agent</h1>
+    </header>
+
+    <div class="container">
+        <div class="chat-box">
+            <!-- 채팅 메시지 영역 -->
+            <div class="chat-messages" id="chat-messages">
+                <!-- 초기 환영 메시지 (AI 왼쪽 정렬) -->
+                <div class="message ai">안녕하세요. 저는 OTD 운영 업무를 도와드릴 수 있습니다.<br>도움이 필요하신 부분을 질문해 주세요.😊</div>
+            </div>
+        </div>
+
+        <!-- 입력 영역 -->
+        <div class="input-area">
+            <textarea id="user-input" placeholder="질문을 입력하세요..." rows="1"></textarea>
+            <!-- 전송 버튼 -->
+            <button id="send-btn">전송</button>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatMessages = document.getElementById('chat-messages');
+            const userInput = document.getElementById('user-input');
+            const sendBtn = document.getElementById('send-btn');
+            let isTyping = false; // 타이핑 중 중복 요청 방지
+
+            // 입력창 높이 자동 조절
+            userInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // 엔터키 전송 (Shift+Enter는 줄바꿈)
+            userInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!isTyping) sendMessage();
+                }
+            });
+
+            sendBtn.addEventListener('click', function() {
+                if (!isTyping) sendMessage();
+            });
+
+            function sendMessage() {
+                const text = userInput.value.trim();
+                if (text === '' || isTyping) return;
+
+                // 1. 사용자 메시지 즉시 추가
+                addMessageUser(text);
+                userInput.value = '';
+                userInput.style.height = '50px'; // 초기 높이로 복원
+
+                // 2. 로딩 표시
+                const loadingId = addLoading();
+
+                // 3. 백엔드 요청
+                fetch('/api/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ query: text })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    removeLoading(loadingId);
+                    // 백엔드 응답 구조 확인: data.answer 또는 data.response
+                    const aiText = data.answer || data.response || "응답을 받을 수 없습니다.";
+                    addMessageAI(aiText);
+                })
+                .catch(error => {
+                    removeLoading(loadingId);
+                    addMessageUser('에러가 발생했습니다: ' + error.message, true);
+                    console.error('Error:', error);
+                });
+            }
+
+            // 사용자 메시지 추가 (즉시)
+            function addMessageUser(text, isError = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', 'user');
+                if (isError) {
+                    messageDiv.style.borderRightColor = '#ff2a6d';
+                    messageDiv.style.color = '#ff2a6d';
+                }
+                messageDiv.textContent = text;
+                chatMessages.appendChild(messageDiv);
+                scrollToBottom();
+            }
+
+            // AI 메시지 추가 (타이핑 효과)
+            function addMessageAI(fullText) {
+                isTyping = true;
+                sendBtn.disabled = true;
+                userInput.disabled = true;
+
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', 'ai');
+                chatMessages.appendChild(messageDiv);
+                
+                let index = 0;
+                const speed = 30; // 타이핑 속도 (ms)
+                
+                // HTML 태그(<br> 등)를 고려한 타이핑
+                // 단순 텍스트 가정: <br>은 줄바꿈으로 처리
+                
+                function typeChar() {
+                    if (index < fullText.length) {
+                        // 현재 글자가 <br> 태그의 시작인지 확인
+                        if (fullText.substring(index, index + 4) === '<br>') {
+                            messageDiv.innerHTML += '<br>';
+                            index += 4;
+                        } else {
+                            // 일반 글자
+                            messageDiv.textContent += fullText.charAt(index);
+                            index++;
+                        }
+                        scrollToBottom();
+                        setTimeout(typeChar, speed);
+                    } else {
+                        // 타이핑 완료
+                        isTyping = false;
+                        sendBtn.disabled = false;
+                        userInput.disabled = false;
+                        userInput.focus();
+                    }
+                }
+
+                typeChar();
+            }
+
+            function addLoading() {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.classList.add('loading');
+                loadingDiv.id = 'loading-' + Date.now();
+                loadingDiv.innerHTML = '<span></span><span></span><span></span>';
+                chatMessages.appendChild(loadingDiv);
+                scrollToBottom();
+                return loadingDiv.id;
+            }
+
+            function removeLoading(id) {
+                const loadingDiv = document.getElementById(id);
+                if (loadingDiv) {
+                    loadingDiv.remove();
+                }
+            }
+
+            function scrollToBottom() {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // 초기 로드 시 가장 아래로 스크롤
+            scrollToBottom();
+        });
+    </script>
+
+</body>
+</html>
